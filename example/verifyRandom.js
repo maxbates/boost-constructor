@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
-const api = require('../api');
+const api = require('../lib/index');
 const seq = require('../sequence');
 
 const token = process.env.BOOST_TOKEN;
@@ -25,8 +25,11 @@ if (!token) {
 module.exports = function verifyRandomSequences() {
   const sequences = [400, 1000, 4000].map(seq.randomSequence);
 
-  return api.verifySequences(token, ...sequences)
-    .then(response => {
+  console.log('verifying:');
+  sequences.forEach(sequence => console.log(`${sequence.length}bp - ${sequence}`));
+
+  return api.verifySequences(token, sequences)
+    .then((response) => {
       console.log(JSON.stringify(response, null, 2));
     });
 };

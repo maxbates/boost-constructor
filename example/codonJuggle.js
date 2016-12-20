@@ -14,12 +14,23 @@
  limitations under the License.
  */
 
-function makeRando(bases = 'ACGT', len) {
-  let seq = '';
-  for (let i = 0; i < len; i++, seq += bases[Math.floor(Math.random() * bases.length)]);
-  return seq;
+const api = require('../lib/index');
+const seq = require('../sequence');
+
+const token = process.env.BOOST_TOKEN;
+if (!token) {
+  throw Error('no token defined');
 }
 
-module.exports.randomSequence = makeRando.bind(null, 'ACGT');
+module.exports = function codonJuggle(...lengths) {
+  const seqLengths = lengths.length > 0 ? lengths : [900];
+  const sequences = seqLengths.map(len => `ATG${seq.randomSequence(len)}TTG`);
 
-module.exports.randomProtein = makeRando.bind(null, 'ACDEFGHIKLMNPQRSTVWY');
+  console.log('converting:');
+  sequences.forEach(seq => console.log(`${seq.length}bp - ${seq}`));
+
+  return api.codonJuggle(token, sequences, 'GENBANK')
+    .then((response) => {
+      console.log(response);
+    });
+};

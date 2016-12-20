@@ -14,10 +14,9 @@
  limitations under the License.
  */
 
-const api = require('./api');
-const seq = require('./sequence');
+const api = require('./lib/api');
 
-//config
+// config
 const username = process.env.BOOST_USERNAME;
 const password = process.env.BOOST_PASSWORD;
 
@@ -26,50 +25,40 @@ if (!username || !password) {
 }
 
 api.getToken(username, password)
-  .then(token => {
+  .then((token) => {
     Object.assign(process.env, { BOOST_TOKEN: token });
 
-    //example:
-    //node run.js example/verifySequence
+    // example:
+    // node run.js example/verifySequence
     const scriptName = process.argv[2];
-    const script = require(`./${process.argv[2]}.js`);
+    const script = require(`./${scriptName}.js`);
+    const args = process.argv.slice(3);
 
-    run(script)
-      .catch(err => {
-        console.error(err);
-        console.error(err.stack);
+    run(script, ...args)
+      .catch((err) => {
         process.exit(1);
       });
   });
 
-//execution helper
-function run(fn) {
+// execution helper
+function run(fn, ...args) {
   const task = typeof fn.default === 'undefined' ? fn : fn.default;
   const start = new Date();
 
-  magentaLog(`Starting '${task.name}'...`);
+  console.log(`Starting '${task.name}'...`);
 
-  return task().then(result => {
+  return task(...args).then((result) => {
     const end = new Date();
     const time = end.getTime() - start.getTime();
 
-    magentaLog(`Finished '${task.name}' after ${time} ms`);
+    console.log(`Finished '${task.name}' after ${time} ms`);
 
     return result;
   })
-    .catch(err => {
-      redLog(`Error running task: ${task.name}`);
-      redLog(err.stack);
+    .catch((err) => {
+      console.log(`Error running task: ${task.name}`);
+      console.log(err);
+      console.log(err.stack);
       throw err;
     });
-}
-
-// log helpers
-
-function magentaLog(msg) {
-  console.log(`\x1b[35m${msg}\x1b[0m`);
-}
-
-function redLog(msg) {
-  console.log(`\x1b[31m${msg}\x1b[0m`);
 }
