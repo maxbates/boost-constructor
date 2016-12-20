@@ -22,8 +22,9 @@ if (!token) {
   throw Error('no token defined');
 }
 
-module.exports = function verifyRandomSequences() {
-  const sequences = [400, 1000, 4000].map(seq.randomSequence);
+module.exports = function verifyRandomSequences(...lengths) {
+  const seqLengths = lengths.length > 0 ? lengths : [400, 1000, 4000];
+  const sequences = seqLengths.map(seq.randomSequence);
 
   console.log('verifying:');
   sequences.forEach(sequence => console.log(`${sequence.length}bp - ${sequence}`));
