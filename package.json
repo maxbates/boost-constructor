@@ -1,16 +1,19 @@
 {
   "name": "boost",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint example lib"
+  "description": "Sequence optimizations in the BOOST suite, from JGI.",
+  "geneticConstructor": {
+    "readable": "JGI BOOST",
+    "type": "(Example)",
+    "router": "router.js"
   },
+  "main": "index.js",
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.15.2",
     "debug": "^2.4.4",
+    "express": "^4.14.0",
     "isomorphic-fetch": "^2.2.1",
     "lodash.merge": "^4.6.0",
     "uuid": "^3.0.1"
