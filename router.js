@@ -27,8 +27,8 @@ router.use(bodyParser.json());
 // credentials
 // can pass credentials as env vars, or as headers boost-username boost-password
 router.use((req, res, next) => {
-  const username = process.env.BOOST_USERNAME || req.headers.get('boost-username');
-  const password = process.env.BOOST_PASSWORD || req.headers.get('boost-password');
+  const username = process.env.BOOST_USERNAME || req.get('boost-username');
+  const password = process.env.BOOST_PASSWORD || req.get('boost-password');
 
   if (!username || !password) {
     res.status(403).send('credentials not set. use env vars or headers: boost-username boost-password');
@@ -49,9 +49,19 @@ router.use((req, res, next) => {
 // sequences can be passed as a string, either of FASTA or CSV, or array of IUPAC-compliant sequences
 // todo - allow files
 router.use((req, res, next) => {
+  if (!req.body) {
+    res.status(422).send('Sequences must be defined on the post body. Pass JSON in form { sequences: <string|array> }');
+    return;
+  }
+
   const { sequences } = req.body;
 
-  //todo - verify seqences - either string or array
+  // todo - verify string format
+  if (!(Array.isArray(sequences) || typeof sequences === 'string')) {
+    res.status(422).send('sequenes in improper format');
+    return;
+  }
+
 
   Object.assign(req, {
     sequences,
@@ -70,20 +80,26 @@ router.post('/verify', (req, res) => {
 
 router.post('/reverseTranslate', (req, res) => {
   const { BOOST_TOKEN, sequences } = req;
-  const { organism, format } = req.query;
+  const opts = req.query;
 
-  api.reverseTranslate(BOOST_TOKEN, sequences, { organism, format })
+  api.reverseTranslate(BOOST_TOKEN, sequences, opts)
   .then(result => res.send(result))
-  .catch(err => res.status(500).send(err));
+  .catch(resp => resp.text()
+    .then(err => res.status(422).json(err))
+    .catch(err => res.status(500).send(resp))
+  );
 });
 
 router.post('/codonJuggle', (req, res) => {
   const { BOOST_TOKEN, sequences } = req;
-  const { organism, format } = req.query;
+  const opts = req.query;
 
-  api.codonJuggle(BOOST_TOKEN, sequences, { organism, format })
+  api.codonJuggle(BOOST_TOKEN, sequences, opts)
   .then(result => res.send(result))
-  .catch(err => res.status(500).send(err));
+  .catch(resp => resp.text()
+    .then(err => res.status(422).json(err))
+    .catch(err => res.status(500).send(resp))
+  );
 });
 
 module.exports = router;
